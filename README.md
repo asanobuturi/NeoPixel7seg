@@ -1,1 +1,1 @@
-# LED7seg
+# NeoPixel7seg
