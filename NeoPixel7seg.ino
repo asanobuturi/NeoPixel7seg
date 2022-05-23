@@ -133,11 +133,13 @@ void displayTimeRainbow( DateTime now, uint8_t sat, uint8_t bri ){
   }
 
 void setup () {
+  //LEDテープを初期化
   FastLED.addLeds<NEOPIXEL, PIN_LED0>(led0, NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, PIN_LED1>(led1, NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, PIN_LED2>(led2, NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, PIN_LED3>(led3, NUM_LEDS);
 
+  //LEDテープが起動しなかったら
   if (! rtc.begin()) {
     lightNum(led1,CHSV(0,127,255),10);//e
     lightNum(led2,CHSV(0,127,255),11);//r
@@ -145,6 +147,7 @@ void setup () {
     while (1) delay(10);
   }
 
+  //LEDテープが動作していなかったら
   if (! rtc.isrunning()) {
     lightNum(led1,CHSV(171,127,255),5);//s
     lightNum(led2,CHSV(171,127,255),10);//e
