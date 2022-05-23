@@ -25,8 +25,6 @@ CRGB led3[NUM_LEDS];
 
 RTC_DS1307 rtc;
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-
 //第led面のsegment番目のセグメントをcolor色で点灯
 void lightSegment( CRGB led[NUM_LEDS] , CRGB color , uint8_t segment ){
   switch(segment){
@@ -104,6 +102,36 @@ void lightNum( CRGB led[NUM_LEDS] , CRGB color , uint8_t num ){
     }
   }
 
+//時間を表示
+void displayTimeNormal( DateTime now, uint8_t sat, uint8_t bri ){
+  uint8_t hueH = 256/60*now.minute();//時の部分の色相
+  uint8_t hueM = 256/60*now.second();//分の部分の色相
+  uint8_t v0 = now.hour()/10;//0面
+  uint8_t v1 = now.hour()%10;//1面
+  uint8_t v2 = now.minute()/10;//2面
+  uint8_t v3 = now.minute()%10;//3面
+    
+  lightNum(led0,CHSV(hueH,sat,bri),v0);//時の十の位
+  lightNum(led1,CHSV(hueH,sat,bri),v1);//時の一の位
+  lightNum(led2,CHSV(hueM,sat,bri),v2);//分の十の位
+  lightNum(led3,CHSV(hueM,sat,bri),v3);//分の一の位
+  }
+
+//時間を虹色で表示
+void displayTimeRainbow( DateTime now, uint8_t sat, uint8_t bri ){
+  const uint16_t cycle = 2500;//周期
+  uint8_t hue = millis()%cycle*256/cycle;//色相
+  uint8_t v0 = now.hour()/10;//0面
+  uint8_t v1 = now.hour()%10;//1面
+  uint8_t v2 = now.minute()/10;//2面
+  uint8_t v3 = now.minute()%10;//3面
+    
+  lightNum(led0,CHSV(hue,sat,bri),v0);//時の十の位
+  lightNum(led1,CHSV(hue,sat,bri),v1);//時の一の位
+  lightNum(led2,CHSV(hue,sat,bri),v2);//分の十の位
+  lightNum(led3,CHSV(hue,sat,bri),v3);//分の一の位
+  }
+
 void setup () {
   FastLED.addLeds<NEOPIXEL, PIN_LED0>(led0, NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, PIN_LED1>(led1, NUM_LEDS);
@@ -127,17 +155,13 @@ void setup () {
 
 void loop () {
   DateTime now = rtc.now();
-  uint8_t hsv_s = analogRead(PIN_S)/4;//彩度
-  uint8_t hsv_v = analogRead(PIN_V)/4;//明度
-  uint8_t hsv_h_h = 256/60*now.minute();//時の部分の色相
-  uint8_t hsv_h_m = 256/60*now.second();//分の部分の色相
-  uint8_t v0 = now.hour()/10;//0面
-  uint8_t v1 = now.hour()%10;//1面
-  uint8_t v2 = now.minute()/10;//2面
-  uint8_t v3 = now.minute()%10;//3面
-    
-  lightNum(led0,CHSV(hsv_h_h,hsv_s,hsv_v),v0);//時の十の位
-  lightNum(led1,CHSV(hsv_h_h,hsv_s,hsv_v),v1);//時の一の位
-  lightNum(led2,CHSV(hsv_h_m,hsv_s,hsv_v),v2);//分の十の位
-  lightNum(led3,CHSV(hsv_h_m,hsv_s,hsv_v),v3);//分の一の位
+  uint8_t sat = analogRead(PIN_S)/4;//彩度
+  uint8_t bri = analogRead(PIN_V)/4;//明度
+  //0分、30分のときに虹色に光らせる
+  if (now.minute()%30 == 0){
+    displayTimeRainbow(now,sat,bri);
+    }
+  else {
+    displayTimeNormal(now,sat,bri);
+    }
 }
