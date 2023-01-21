@@ -1,5 +1,6 @@
 #include "RTClib.h"
-#include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
+
 
 #define NUM_LEDS 25 //1つのパネル当たりのLEDの数
 
@@ -20,57 +21,60 @@
 
 #define RAINBOW_CYCLE 2500 //虹色のサイクル(ms)
 
-CRGB led0[NUM_LEDS];
-CRGB led1[NUM_LEDS];
-CRGB led2[NUM_LEDS];
-CRGB led3[NUM_LEDS];
+Adafruit_NeoPixel led[4] = {
+  {NUM_LEDS, PIN_LED0, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED1, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED2, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED3, NEO_GRB + NEO_KHZ800},
+};
+
 
 RTC_DS1307 rtc;
 
-//第led面のsegment番目のセグメントをcolor色で点灯
-void lightSegment( CRGB led[NUM_LEDS] , CRGB color , uint8_t segment ) {
+//第panel面のsegment番目のセグメントをcolor色で点灯
+void lightSegment( uint8_t panel , uint32_t color , uint8_t segment ) {
   switch (segment) {
     case 0:
       for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[LEDS_V * 0 + LEDS_H * 0 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 0 + LEDS_H * 0 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
     case 1:
       for (uint8_t i = 0; i < LEDS_H; i++) {
-        led[LEDS_V * 1 + LEDS_H * 0 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 1 + LEDS_H * 0 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
     case 2:
       for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[LEDS_V * 1 + LEDS_H * 1 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 1 + LEDS_H * 1 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
     case 3:
       for (uint8_t i = 0; i < LEDS_H; i++) {
-        led[LEDS_V * 2 + LEDS_H * 1 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 2 + LEDS_H * 1 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
     case 4:
       for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[LEDS_V * 2 + LEDS_H * 2 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 2 + LEDS_H * 2 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
     case 5:
       for (uint8_t i = 0; i < LEDS_H; i++) {
-        led[LEDS_V * 3 + LEDS_H * 2 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 3 + LEDS_H * 2 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
     case 6:
       for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[LEDS_V * 3 + LEDS_H * 3 + i] = color;
+        led[panel].setPixelColor(LEDS_V * 3 + LEDS_H * 3 + i, color);
       }
-      FastLED.show();
+      led[panel].show();
       break;
   }
 }
@@ -93,77 +97,69 @@ const bool seg_num[13][7] = {
 };
 
 //数字を表示
-void lightNum( CRGB led[NUM_LEDS] , CRGB color , uint8_t num ) {
+void lightNum( uint8_t panel , uint32_t color , uint8_t num ) {
   for (uint8_t i = 0; i < 7; i++) {
     if (seg_num[num][i] == 1) {
-      lightSegment(led, color, i);
+      lightSegment(panel, color, i);
     }
     else {
-      lightSegment(led, CRGB::Black, i);
+      lightSegment(panel, led[panel].Color(0, 0, 0), i);
     }
   }
 }
 
 //時間を表示
 void displayTimeNormal( DateTime now, uint8_t sat, uint8_t bri ) {
-  uint8_t hueH = 256 / 60 * now.minute(); //時の部分の色相
-  uint8_t hueM = 256 / 60 * now.second(); //分の部分の色相
+  uint16_t hueM = 65536 / 60 * now.minute(); //分の部分の色相
+  uint16_t hueS = 65536 / 60 * now.second(); //秒の部分の色相
   uint8_t v0 = now.hour() / 10; //0面
   uint8_t v1 = now.hour() % 10; //1面
   uint8_t v2 = now.minute() / 10; //2面
   uint8_t v3 = now.minute() % 10; //3面
 
-  lightNum(led0, CHSV(hueH, sat, bri), v0); //時の十の位
-  lightNum(led1, CHSV(hueH, sat, bri), v1); //時の一の位
-  lightNum(led2, CHSV(hueM, sat, bri), v2); //分の十の位
-  lightNum(led3, CHSV(hueM, sat, bri), v3); //分の一の位
+  lightNum(0, led[0].ColorHSV(hueM, sat, bri), v0); //時の十の位
+  lightNum(1, led[1].ColorHSV(hueM, sat, bri), v1); //時の一の位
+  lightNum(2, led[2].ColorHSV(hueS, sat, bri), v2); //分の十の位
+  lightNum(3, led[3].ColorHSV(hueS, sat, bri), v3); //分の一の位
 }
 
-//時間を虹色で表示
+//時間を表示
 void displayTimeRainbow( DateTime now, uint8_t sat, uint8_t bri ) {
-  uint8_t hue = millis() % RAINBOW_CYCLE * 256 / RAINBOW_CYCLE; //色相
+  uint16_t hue = millis() % RAINBOW_CYCLE * 65536 / RAINBOW_CYCLE; //色相
   uint8_t v0 = now.hour() / 10; //0面
   uint8_t v1 = now.hour() % 10; //1面
   uint8_t v2 = now.minute() / 10; //2面
   uint8_t v3 = now.minute() % 10; //3面
 
-  lightNum(led0, CHSV(hue, sat, bri), v0); //時の十の位
-  lightNum(led1, CHSV(hue, sat, bri), v1); //時の一の位
-  lightNum(led2, CHSV(hue, sat, bri), v2); //分の十の位
-  lightNum(led3, CHSV(hue, sat, bri), v3); //分の一の位
+  lightNum(0, led[0].ColorHSV(hue, sat, bri), v0); //時の十の位
+  lightNum(1, led[1].ColorHSV(hue, sat, bri), v1); //時の一の位
+  lightNum(2, led[2].ColorHSV(hue, sat, bri), v2); //分の十の位
+  lightNum(3, led[3].ColorHSV(hue, sat, bri), v3); //分の一の位
 }
 
-void setup () {
+void setup(){
   //上下ボタンを設定
   pinMode(PIN_UP, INPUT);
   pinMode(PIN_DOWN, INPUT);
 
   //LEDテープを初期化
-  FastLED.addLeds<NEOPIXEL, PIN_LED0>(led0, NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN_LED1>(led1, NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN_LED2>(led2, NUM_LEDS);
-  FastLED.addLeds<NEOPIXEL, PIN_LED3>(led3, NUM_LEDS);
+  for( uint8_t i = 0; i < 6; i++ )led[i].begin();
 
   //LEDテープが起動しなかったら
   if (! rtc.begin()) {
-    lightNum(led1, CHSV(0, 127, 255), 10); //e
-    lightNum(led2, CHSV(0, 127, 255), 11); //r
-    lightNum(led3, CHSV(0, 127, 255), 11); //r
+    lightNum(1, led[1].ColorHSV(0, 127, 255), 10); //e
+    lightNum(2, led[2].ColorHSV(0, 127, 255), 11); //r
+    lightNum(3, led[3].ColorHSV(0, 127, 255), 11); //r
     while (1) delay(10);
   }
-
-  //LEDテープが動作していなかったら
-  if (! rtc.isrunning()) {
-    lightNum(led1, CHSV(171, 127, 255), 5); //s
-    lightNum(led2, CHSV(171, 127, 255), 10); //e
-    lightNum(led3, CHSV(171, 127, 255), 12); //t
+  
+  if (!rtc.isrunning()) {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 }
 
-void loop () {
+void loop(){
   DateTime now = rtc.now();
-  
   uint8_t sat = analogRead(PIN_S) / 4; //彩度
   uint8_t bri = analogRead(PIN_V) / 4; //明度
   //0分、30分のときに虹色に光らせる
