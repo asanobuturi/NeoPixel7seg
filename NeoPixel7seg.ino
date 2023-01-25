@@ -14,8 +14,8 @@
 #define PIN_LED3 5
 
 //その他のピンの設定
-#define PIN_UP 6
-#define PIN_DOWN 7
+#define PIN_UP 7
+#define PIN_DOWN 6
 #define PIN_S A0 //彩度
 #define PIN_V A1 //明度
 
