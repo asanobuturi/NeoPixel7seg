@@ -33,50 +33,10 @@ RTC_DS1307 rtc;
 
 //第panel面のsegment番目のセグメントをcolor色で点灯
 void lightSegment( uint8_t panel , uint32_t color , uint8_t segment ) {
-  switch (segment) {
-    case 0:
-      for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[panel].setPixelColor(LEDS_V * 0 + LEDS_H * 0 + i, color);
-      }
-      led[panel].show();
-      break;
-    case 1:
-      for (uint8_t i = 0; i < LEDS_H; i++) {
-        led[panel].setPixelColor(LEDS_V * 1 + LEDS_H * 0 + i, color);
-      }
-      led[panel].show();
-      break;
-    case 2:
-      for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[panel].setPixelColor(LEDS_V * 1 + LEDS_H * 1 + i, color);
-      }
-      led[panel].show();
-      break;
-    case 3:
-      for (uint8_t i = 0; i < LEDS_H; i++) {
-        led[panel].setPixelColor(LEDS_V * 2 + LEDS_H * 1 + i, color);
-      }
-      led[panel].show();
-      break;
-    case 4:
-      for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[panel].setPixelColor(LEDS_V * 2 + LEDS_H * 2 + i, color);
-      }
-      led[panel].show();
-      break;
-    case 5:
-      for (uint8_t i = 0; i < LEDS_H; i++) {
-        led[panel].setPixelColor(LEDS_V * 3 + LEDS_H * 2 + i, color);
-      }
-      led[panel].show();
-      break;
-    case 6:
-      for (uint8_t i = 0; i < LEDS_V; i++) {
-        led[panel].setPixelColor(LEDS_V * 3 + LEDS_H * 3 + i, color);
-      }
-      led[panel].show();
-      break;
+  for(uint8_t i = 0; i < (segment % 2 == 0 ? LEDS_V : LEDS_H); i++){
+    led[panel].setPixelColor(LEDS_V * floor((segment + 1) / 2) + LEDS_H * floor(segment / 2) + i, color);
   }
+  led[panel].show();
 }
 
 //数字とセグメントの対応(10->e 11->r 12->t)
