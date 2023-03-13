@@ -1,5 +1,0 @@
-{
-    "port": "COM6",
-    "board": "arduino:avr:uno",
-    "sketch": "NeoPixel7seg.ino"
-}
