@@ -6,19 +6,17 @@
 
 #define NUM_LEDS LEDS_V * 4 + LEDS_H * 3 //1つのパネル当たりのLEDの数
 
-//それぞれのLEDのピン
+#define NUM_PANELS 4 //7セグのパネルの数
+
+//NeoPixelのピン、ボタンのピン
+#if NUM_PANELS == 4
+
 #define PIN_LED0 2
 #define PIN_LED1 3
 #define PIN_LED2 4
 #define PIN_LED3 5
-
-//その他のピンの設定
 #define PIN_UP 7
 #define PIN_DOWN 6
-#define PIN_S A0 //彩度
-#define PIN_V A1 //明度
-
-#define RAINBOW_CYCLE 2500 //虹色のサイクル(ms)
 
 Adafruit_NeoPixel led[4] = {
   {NUM_LEDS, PIN_LED0, NEO_GRB + NEO_KHZ800},
@@ -27,6 +25,36 @@ Adafruit_NeoPixel led[4] = {
   {NUM_LEDS, PIN_LED3, NEO_GRB + NEO_KHZ800},
 };
 
+#elif NUM_PANELS == 6
+
+#define PIN_LED0 2
+#define PIN_LED1 3
+#define PIN_LED2 4
+#define PIN_LED3 5
+#define PIN_LED4 6
+#define PIN_LED5 7
+#define PIN_UP 8
+#define PIN_DOWN 9
+
+Adafruit_NeoPixel led[6] = {
+  {NUM_LEDS, PIN_LED0, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED1, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED2, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED3, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED4, NEO_GRB + NEO_KHZ800},
+  {NUM_LEDS, PIN_LED5, NEO_GRB + NEO_KHZ800},
+};
+
+#else
+#error The number of the panels must be 4 or 6!
+
+#endif
+
+//その他のピンの設定
+#define PIN_S A0 //彩度
+#define PIN_V A1 //明度
+
+#define RAINBOW_CYCLE 2500 //虹色のサイクル(ms)
 
 RTC_DS1307 rtc;
 
