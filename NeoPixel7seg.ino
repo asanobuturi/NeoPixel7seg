@@ -1,11 +1,10 @@
 #include "RTClib.h"
 #include <Adafruit_NeoPixel.h>
 
-
-#define NUM_LEDS 25 //1つのパネル当たりのLEDの数
-
 #define LEDS_V 4 //縦のLED
 #define LEDS_H 3 //横のLED
+
+#define NUM_LEDS LEDS_V * 4 + LEDS_H * 3 //1つのパネル当たりのLEDの数
 
 //それぞれのLEDのピン
 #define PIN_LED0 2
