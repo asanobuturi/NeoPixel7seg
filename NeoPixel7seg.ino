@@ -133,22 +133,12 @@ bool isNthLedLit( uint8_t num, uint8_t n ){
 //虹色に光らせるときのpanel面目のn番目のLEDの色相
 uint16_t hueOfRainbow( uint8_t panel, uint8_t n ){
   uint8_t rowFromLeft = panel * (LEDS_H + 2) + max(0,min(LEDS_H + 1, (abs((2 * n + 2 * (LEDS_H + 1) + (LEDS_V - 1)) % (4 * (LEDS_H + LEDS_V)) - 2 * (LEDS_H + LEDS_V)) - LEDS_V + 1) / 2));
-  uint16_t hue = (RAINBOW_CYCLE / (NUM_PANELS * (LEDS_H * 2)) * rowFromLeft + millis()) % RAINBOW_CYCLE * 65536 / RAINBOW_CYCLE;
+  uint16_t hue = (-RAINBOW_CYCLE / (NUM_PANELS * (LEDS_H * 2)) * rowFromLeft + millis()) % RAINBOW_CYCLE * 65536 / RAINBOW_CYCLE;
   return hue;
 }
 
 //panel面目のn番目のLEDの色相
 uint16_t hueOfLed( uint8_t panel, uint8_t n, DateTime now ){
-  /*uint8_t num;
-  switch(panel){
-    case 0: num = now.hour() / 10; break;
-    case 1: num = now.hour() % 10; break;
-    case 2: num = now.minute() / 10; break;
-    case 3: num = now.minute() % 10; break;
-    case 4: num = now.second() / 10; break;
-    case 5: num = now.second() % 10; break;
-  }
-  if (isNthLedLit(num, n) == false)return 0;*/
   uint16_t hue;
   if(now.minute() == 0 || now.minute() == 30){
     hue = hueOfRainbow(panel, n);
@@ -166,6 +156,35 @@ uint16_t hueOfLed( uint8_t panel, uint8_t n, DateTime now ){
   return hue;
 }
 
+//時刻がnowのときのpanel面の数字
+uint8_t numOfTime( uint8_t panel, DateTime now ){
+  uint8_t num;
+  switch(panel){
+    case 0: num = now.hour() / 10; break;
+    case 1: num = now.hour() % 10; break;
+    case 2: num = now.minute() / 10; break;
+    case 3: num = now.minute() % 10; break;
+    case 4: num = now.second() / 10; break;
+    case 5: num = now.second() % 10; break;
+  }
+  return num;
+}
+
+//時刻を表示する
+void displayTime( DateTime now, uint8_t sat, uint8_t bri ){
+  for(uint8_t ip = 0; ip < NUM_PANELS; ip++){
+    for(uint8_t il = 0; il < NUM_LEDS; il++){
+      if(isNthLedLit(numOfTime(ip, now), il) == true){
+        led[ip].setPixelColor(il, led[ip].ColorHSV(hueOfLed(ip, il, now), sat, bri));
+      }
+      else{
+        led[ip].setPixelColor(il, 0, 0, 0);
+      }
+    }
+    led[ip].show();
+  }
+}
+
 void setup(){
   //上下ボタンを設定
   pinMode(PIN_UP, INPUT);
@@ -176,12 +195,9 @@ void setup(){
 
   //LEDテープが起動しなかったら
   if (! rtc.begin()) {
-    lightNum(1, led[1].ColorHSV(0, 127, 255), 10); //e
-    lightNum(2, led[2].ColorHSV(0, 127, 255), 11); //r
-    lightNum(3, led[3].ColorHSV(0, 127, 255), 11); //r
     while (1) delay(10);
   }
-  
+
   if (!rtc.isrunning()) {
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
@@ -191,14 +207,8 @@ void loop(){
   DateTime now = rtc.now();
   uint8_t sat = analogRead(PIN_S) / 4; //彩度
   uint8_t bri = analogRead(PIN_V) / 4; //明度
-  //0分、30分のときに虹色に光らせる
-  if (now.minute() % 30 == 0) {
-    displayTimeRainbow(now, sat, bri);
-  }
-  else {
-    displayTimeNormal(now, sat, bri);
-  }
-  
+  displayTime(now, sat, bri);
+
   //上下ボタンによる時間調整
   if (digitalRead(PIN_UP) == HIGH){
     while(digitalRead(PIN_UP) == HIGH);//ボタンが離されるまで待つ
