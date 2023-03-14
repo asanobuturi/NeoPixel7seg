@@ -84,7 +84,7 @@ const bool seg_num[13][7] = {
 };
 
 //数字を表示
-void lightNum( uint8_t panel , uint32_t color , uint8_t num ) {
+/*void lightNum( uint8_t panel , uint32_t color , uint8_t num ) {
   for (uint8_t i = 0; i < 7; i++) {
     if (seg_num[num][i] == 1) {
       lightSegment(panel, color, i);
@@ -122,6 +122,48 @@ void displayTimeRainbow( DateTime now, uint8_t sat, uint8_t bri ) {
   lightNum(1, led[1].ColorHSV(hue, sat, bri), v1); //時の一の位
   lightNum(2, led[2].ColorHSV(hue, sat, bri), v2); //分の十の位
   lightNum(3, led[3].ColorHSV(hue, sat, bri), v3); //分の一の位
+}*/
+
+//1桁の整数numに光らせるときにn番目のledを点灯させるのか
+bool isNthLedLit( uint8_t num, uint8_t n ){
+  uint8_t segment = 2 * floor(n / (LEDS_V + LEDS_H)) + ( n % (LEDS_V + LEDS_H) >= LEDS_V );
+  return seg_num[num][segment];
+}
+
+//虹色に光らせるときのpanel面目のn番目のLEDの色相
+uint16_t hueOfRainbow( uint8_t panel, uint8_t n ){
+  uint8_t rowFromLeft = panel * (LEDS_H + 2) + max(0,min(LEDS_H + 1, (abs((2 * n + 2 * (LEDS_H + 1) + (LEDS_V - 1)) % (4 * (LEDS_H + LEDS_V)) - 2 * (LEDS_H + LEDS_V)) - LEDS_V + 1) / 2));
+  uint16_t hue = (RAINBOW_CYCLE / (NUM_PANELS * (LEDS_H * 2)) * rowFromLeft + millis()) % RAINBOW_CYCLE * 65536 / RAINBOW_CYCLE;
+  return hue;
+}
+
+//panel面目のn番目のLEDの色相
+uint16_t hueOfLed( uint8_t panel, uint8_t n, DateTime now ){
+  /*uint8_t num;
+  switch(panel){
+    case 0: num = now.hour() / 10; break;
+    case 1: num = now.hour() % 10; break;
+    case 2: num = now.minute() / 10; break;
+    case 3: num = now.minute() % 10; break;
+    case 4: num = now.second() / 10; break;
+    case 5: num = now.second() % 10; break;
+  }
+  if (isNthLedLit(num, n) == false)return 0;*/
+  uint16_t hue;
+  if(now.minute() == 0 || now.minute() == 30){
+    hue = hueOfRainbow(panel, n);
+  }
+  else{
+    switch(NUM_PANELS - panel){
+      case 6: hue = 65536 / 60 * now.hour(); break;
+      case 5: hue = 65536 / 60 * now.hour(); break;
+      case 4: hue = 65536 / 60 * now.minute(); break;
+      case 3: hue = 65536 / 60 * now.minute(); break;
+      case 2: hue = 65536 / 60 * now.second(); break;
+      case 1: hue = 65536 / 60 * now.second(); break;
+    }
+  }
+  return hue;
 }
 
 void setup(){
