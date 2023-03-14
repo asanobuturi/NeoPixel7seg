@@ -58,14 +58,6 @@ Adafruit_NeoPixel led[6] = {
 
 RTC_DS1307 rtc;
 
-//第panel面のsegment番目のセグメントをcolor色で点灯
-void lightSegment( uint8_t panel , uint32_t color , uint8_t segment ) {
-  for(uint8_t i = 0; i < (segment % 2 == 0 ? LEDS_V : LEDS_H); i++){
-    led[panel].setPixelColor(LEDS_V * floor((segment + 1) / 2) + LEDS_H * floor(segment / 2) + i, color);
-  }
-  led[panel].show();
-}
-
 //数字とセグメントの対応(10->e 11->r 12->t)
 const bool seg_num[13][7] = {
   {1, 1, 1, 0, 1, 1, 1},
@@ -82,47 +74,6 @@ const bool seg_num[13][7] = {
   {0, 0, 0, 1, 1, 0, 0},
   {1, 0, 0, 1, 1, 1, 0},
 };
-
-//数字を表示
-/*void lightNum( uint8_t panel , uint32_t color , uint8_t num ) {
-  for (uint8_t i = 0; i < 7; i++) {
-    if (seg_num[num][i] == 1) {
-      lightSegment(panel, color, i);
-    }
-    else {
-      lightSegment(panel, led[panel].Color(0, 0, 0), i);
-    }
-  }
-}
-
-//時間を表示
-void displayTimeNormal( DateTime now, uint8_t sat, uint8_t bri ) {
-  uint16_t hueM = 65536 / 60 * now.minute(); //分の部分の色相
-  uint16_t hueS = 65536 / 60 * now.second(); //秒の部分の色相
-  uint8_t v0 = now.hour() / 10; //0面
-  uint8_t v1 = now.hour() % 10; //1面
-  uint8_t v2 = now.minute() / 10; //2面
-  uint8_t v3 = now.minute() % 10; //3面
-
-  lightNum(0, led[0].ColorHSV(hueM, sat, bri), v0); //時の十の位
-  lightNum(1, led[1].ColorHSV(hueM, sat, bri), v1); //時の一の位
-  lightNum(2, led[2].ColorHSV(hueS, sat, bri), v2); //分の十の位
-  lightNum(3, led[3].ColorHSV(hueS, sat, bri), v3); //分の一の位
-}
-
-//時間を表示
-void displayTimeRainbow( DateTime now, uint8_t sat, uint8_t bri ) {
-  uint16_t hue = millis() % RAINBOW_CYCLE * 65536 / RAINBOW_CYCLE; //色相
-  uint8_t v0 = now.hour() / 10; //0面
-  uint8_t v1 = now.hour() % 10; //1面
-  uint8_t v2 = now.minute() / 10; //2面
-  uint8_t v3 = now.minute() % 10; //3面
-
-  lightNum(0, led[0].ColorHSV(hue, sat, bri), v0); //時の十の位
-  lightNum(1, led[1].ColorHSV(hue, sat, bri), v1); //時の一の位
-  lightNum(2, led[2].ColorHSV(hue, sat, bri), v2); //分の十の位
-  lightNum(3, led[3].ColorHSV(hue, sat, bri), v3); //分の一の位
-}*/
 
 //1桁の整数numに光らせるときにn番目のledを点灯させるのか
 bool isNthLedLit( uint8_t num, uint8_t n ){
